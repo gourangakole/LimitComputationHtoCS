@@ -1,7 +1,7 @@
-# LimitComputationHtoCS
+# LimitComputation for charged Higgs to c s-bar
 First checkout the Higgs combination code in lxplus.
 
-Istructions are here:
+Instructions are below:
 
 https://twiki.cern.ch/twiki/bin/view/CMS/SWGuideHiggsAnalysisCombinedLimit
 
