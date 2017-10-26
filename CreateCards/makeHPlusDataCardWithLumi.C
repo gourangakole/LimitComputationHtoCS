@@ -11,39 +11,60 @@
 void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "cat1", string lumi_cat = "lumiA")
 {
   // Luminosity measured by pixelLumicalc
-  double lumiA = 0.867916 ; 
-  double lumiB = 4.335;
-  double lumiC = 6.724; 
-  double lumiD = 7.133;
+  
+  double lumiB = 5090899672;
+  double lumiC = 2348989796; 
+  double lumiD = 4208427684;
+  double lumiE = 4008867013;
+  double lumiF = 3105455587;
+  double lumiG = 7425047006;
+  double lumiH = 8074187927 + 216594264;
+  
   double scale_factor = 0.0;
-  if(lumi_cat.find("lumiA")!=string::npos) scale_factor = lumiA;
-  else if(lumi_cat.find("lumiB")!=string::npos) scale_factor = lumiB;
+  
+  if(lumi_cat.find("lumiB")!=string::npos) scale_factor = lumiB;
   else if(lumi_cat.find("lumiC")!=string::npos) scale_factor = lumiC;
   else if(lumi_cat.find("lumiD")!=string::npos) scale_factor = lumiD;
-  else scale_factor = lumiA + lumiB + lumiC + lumiD;
+  else if(lumi_cat.find("lumiE")!=string::npos) scale_factor = lumiE;
+  else if(lumi_cat.find("lumiF")!=string::npos) scale_factor = lumiF;
+  else if(lumi_cat.find("lumiG")!=string::npos) scale_factor = lumiG;
+  else if(lumi_cat.find("lumiH")!=string::npos) scale_factor = lumiH;
+  else scale_factor = lumiB + lumiC + lumiD +lumiE +lumiF + lumiG+ lumiH;
   cout << "Lumi: " << scale_factor << endl;
+  
+  double totLumi = (lumiB + lumiC + lumiD +lumiE +lumiF + lumiG+ lumiH)/pow(10,9);
+  cout << "totLumi" << totLumi << endl; 
 
+  // if lumi weight is applied the pass only scale_factor = 1
+  scale_factor = 1.0; 
+  
+  cout << "Final scalefactor: " << scale_factor << endl;
+
+  /*
   TFile *f;
   if(cat_name.find("cat")!=string::npos)
     f = new TFile(Form("HplusResJECShapes_%s.root",cat_name.c_str()), "READ");
   else f = new TFile("HplusResJECShapes.root", "READ");
 
   TH1F *h_data_diff = (f->Get("ResJES_rel_scale"))->Clone("h_data_diff"); // dataJEC dif histogram for muon
+  */
 
   TFile* fout;
   if(cat_name.find("cat")!=string::npos)
     fout = new TFile(Form("HplusShapes_%s.root", cat_name.c_str()), "RECREATE");
   else fout = new TFile("HplusShapes.root", "RECREATE");
   
-  cout << "Electron datacards preparation: " << Form("ohhhh_%4s", cat_name.c_str()) << endl;
+  cout << "datacards preparation: " << Form("ohhhh_%4s", cat_name.c_str()) << endl;
   
-  TString inputFilePath("/afs/cern.ch/work/g/gkole/chargedHiggs/8TeV/ele_ch/SLC6/AfterApproved/8TeV/2M/MET_corr/Final_v1/test3/merged/");
+  TString inputFilePath("/afs/cern.ch/user/r/rverma/public/stack_20171013_Mu_sys_new/");
 
   cout << "inputpath:  " << inputFilePath << endl;
-  TFile* fttbar = TFile::Open(inputFilePath+"ttbar_ele_selection.root", "READ"); 
+  TFile* fttbar = TFile::Open(inputFilePath+"all_TTJetsP.root", "READ");  // all_TTJetsP.root and all_TTJetsM (P stand for Powheg and M = Madgraph)
   if(fttbar == 0) return;
   if(fttbar->IsZombie()){fttbar->Close(); return;}
 
+  cout << "tt~ file opened:" << endl; 
+  /*
   TFile* fttbar_scaleup = TFile::Open(inputFilePath+"ttbar_scaleup_ele_selection.root", "READ");
   if(fttbar_scaleup == 0) return;
   if(fttbar_scaleup->IsZombie()){fttbar_scaleup->Close(); return;}
@@ -51,7 +72,8 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   TFile* fttbar_scaledown = TFile::Open(inputFilePath+"ttbar_scaledown_ele_selection.root", "READ");
   if(fttbar_scaledown == 0) return;
   if(fttbar_scaledown->IsZombie()){fttbar_scaledown->Close(); return;}
-
+  
+  
   TFile* fttbar_matchingup = TFile::Open(inputFilePath+"ttbar_matchingup_ele_selection.root", "READ");
   if(fttbar_matchingup == 0) return;
   if(fttbar_matchingup->IsZombie()){fttbar_matchingup->Close(); return;}
@@ -59,32 +81,36 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   TFile* fttbar_matchingdown = TFile::Open(inputFilePath+"ttbar_matchingdown_ele_selection.root", "READ");
   if(fttbar_matchingdown == 0) return;
   if(fttbar_matchingdown->IsZombie()){fttbar_matchingdown->Close(); return;}
+  */
 
   fout->cd();
-  TH1F* ttbar = (fttbar->Get("base/"+histname))->Clone("ttbar");
-  TH1F* ttbar_topPtweight = (fttbar->Get("base/AvTopPtWeight"))->Clone("ttbar_topPtweight"); // get top pt weight
+  TH1F* ttbar = (TH1F*)(fttbar->Get("base/Iso/KinFit/"+histname))->Clone("ttbar");
+  
+  TH1F* ttbar_topPtweight = (TH1F*)(fttbar->Get("base/SF_topPtWeights"))->Clone("ttbar_topPtweight"); // get top pt weight
   ttbar->SetName("ttbar");
-  ttbar->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2)); // apply avg top pt weight
+  ttbar->Scale(scale_factor/ttbar_topPtweight->GetMean()); // apply avg top pt weight
   ttbar->Write("ttbar");
 
-  TH1F* ttbar_JESUp = (fttbar->Get("JESPlus/"+histname))->Clone("ttbar_JESUp"); 
+  TH1F* ttbar_JESUp = (TH1F*)(fttbar->Get("JESPlus/Iso/KinFit/"+histname))->Clone("ttbar_JESUp"); 
   ttbar_JESUp->SetName("ttbar_JESUp");
-  ttbar_JESUp->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2)); 
+  ttbar_JESUp->Scale(scale_factor/ttbar_topPtweight->GetMean()); 
   ttbar_JESUp->Write("ttbar_JESUp");
-  TH1F* ttbar_JESDown = (fttbar->Get("JESMinus/"+histname))->Clone("ttbar_JESDown");  
+  TH1F* ttbar_JESDown = (TH1F*)(fttbar->Get("JESMinus/Iso/KinFit/"+histname))->Clone("ttbar_JESDown");  
   ttbar_JESDown->SetName("ttbar_JESDown");
-  ttbar_JESDown->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2));  
+  ttbar_JESDown->Scale(scale_factor/ttbar_topPtweight->GetMean());  
   ttbar_JESDown->Write("ttbar_JESDown");
 
-  TH1F* ttbar_JERUp = (fttbar->Get("JERPlus/"+histname))->Clone("ttbar_JERUp");
+  TH1F* ttbar_JERUp = (TH1F*)(fttbar->Get("JERPlus/Iso/KinFit/"+histname))->Clone("ttbar_JERUp");
   ttbar_JERUp->SetName("ttbar_JERUp");
-  ttbar_JERUp->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2));
+  ttbar_JERUp->Scale(scale_factor/ttbar_topPtweight->GetMean());
   ttbar_JERUp->Write("ttbar_JERUp");
-  TH1F* ttbar_JERDown = (fttbar->Get("JERMinus/"+histname))->Clone("ttbar_JERDown");
+  TH1F* ttbar_JERDown = (TH1F*)(fttbar->Get("JERMinus/Iso/KinFit/"+histname))->Clone("ttbar_JERDown");
   ttbar_JERDown->SetName("ttbar_JERDown");
-  ttbar_JERDown->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2));
+  ttbar_JERDown->Scale(scale_factor/ttbar_topPtweight->GetMean());
   ttbar_JERDown->Write("ttbar_JERDown");
-
+  
+  // FIXME
+  /*
   TH1F* ttbar_topPtUp = (fttbar->Get("TopPtPlus/"+histname))->Clone("ttbar_topPtUp");
   ttbar_topPtUp->SetName("ttbar_topPtUp");
   TH1F* ttbar_topPtweightPlus = (fttbar->Get("TopPtPlus/AvTopPtWeight"))->Clone("ttbar_topPtweightPlus");
@@ -96,12 +122,14 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   TH1F* ttbar_topPtweightMinus = (fttbar->Get("TopPtMinus/AvTopPtWeight"))->Clone("ttbar_topPtweightMinus");
   ttbar_topPtDown->Scale(scale_factor/ttbar_topPtweightMinus->GetBinContent(2));
   ttbar_topPtDown->Write("ttbar_topPtDown");
+  */
+  
+  TH1F* ttbar_bTagUp = (TH1F*)(fttbar->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("ttbar_bTagUp");  
+  ttbar_bTagUp->Scale(scale_factor/ttbar_topPtweight->GetMean());  
+  TH1F* ttbar_bTagDown = (TH1F*)(fttbar->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("ttbar_bTagDown");   
+  ttbar_bTagDown->Scale(scale_factor/ttbar_topPtweight->GetMean());   
 
-  TH1F* ttbar_bTagUp = (fttbar->Get("bTagPlus/"+histname))->Clone("ttbar_bTagUp");  
-  ttbar_bTagUp->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2));  
-  TH1F* ttbar_bTagDown = (fttbar->Get("bTagMinus/"+histname))->Clone("ttbar_bTagDown");   
-  ttbar_bTagDown->Scale(scale_factor/ttbar_topPtweight->GetBinContent(2));   
-
+  /*
   TH1F* ttbar_ResJESUp = (TH1F*)ttbar->Clone("ttbar_ResJESUp");
   ttbar_ResJESUp->Reset();
   for(int i = 1; i<ttbar->GetNbinsX(); i++){
@@ -115,8 +143,9 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     ttbar_ResJESDown->SetBinContent(i, ttbar->GetBinContent(i)*(1-h_data_diff->GetBinContent(i)));
   }
   ttbar_ResJESDown->Write("ttbar_ResJESDown");
-
+  */
     
+  /*
   // adding scale up/down systematics
   TH1F* ttbar_scaleup = (fttbar_scaleup->Get("base/"+histname))->Clone("ttbar_scaleup");
   TH1F* ttbar_scaleup_topPtweight = (fttbar_scaleup->Get("base/AvTopPtWeight"))->Clone("ttbar_scaleup_topPtweight");
@@ -142,49 +171,54 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   //  ttbar_matchingdown->Scale(scale_factor/ttbar_matchingdown_topPtweight->GetBinContent(2)); // apply avg top pt weight
   ttbar_matchingdown->Scale(ttbar->Integral()/ttbar_matchingdown->Integral());
   ttbar_matchingdown->Write("ttbar_matchingDown");
+  */
   
-  
-  TH1F* ttll = ttbar->Clone("ttll"); 
+  TH1F* ttll = (TH1F*)ttbar->Clone("ttll"); 
   ttll->Scale(0);
   //ttll->Scale(scale_factor); 
   ttll->Write(); 
-  TH1F* ttll_JESUp = ttbar_JESUp->Clone("ttll_JESUp");  
+  TH1F* ttll_JESUp = (TH1F*)ttbar_JESUp->Clone("ttll_JESUp");  
   ttll_JESUp->Scale(0);
   //ttll_JESUp->Scale(scale_factor);  
   ttll_JESUp->Write(); 
-  TH1F* ttll_JESDown = ttbar_JESDown->Clone("ttll_JESDown");   
+  TH1F* ttll_JESDown = (TH1F*)ttbar_JESDown->Clone("ttll_JESDown");   
   ttll_JESDown->Scale(0);
   //ttll_JESDown->Scale(scale_factor);   
   ttll_JESDown->Write(); 
 
-  TFile* fwjet = TFile::Open(inputFilePath+"wjet_ele_selection.root", "READ"); 
+  ////////////
+  // W+Jets
+  ///////////
+  
+  TFile* fwjet = TFile::Open(inputFilePath+"all_WJets.root", "READ"); 
   if(fwjet == 0) return; 
   if(fwjet->IsZombie()){fwjet->Close(); return;} 
 
   fout->cd();
-  TH1F* wjet = (fwjet->Get("base/"+histname))->Clone("wjet"); 
+  TH1F* wjet = (TH1F*)(fwjet->Get("base/Iso/KinFit/"+histname))->Clone("wjet"); 
   wjet->Scale(scale_factor); 
   wjet->Write(); 
   // JES shape
-  TH1F* wjet_JESUp = (fwjet->Get("JESPlus/"+histname))->Clone("wjet_JESUp");  
+  TH1F* wjet_JESUp = (TH1F*)(fwjet->Get("JESPlus/Iso/KinFit/"+histname))->Clone("wjet_JESUp");  
   wjet_JESUp->Scale(scale_factor);  
   wjet_JESUp->Write(); 
-  TH1F* wjet_JESDown = (fwjet->Get("JESMinus/"+histname))->Clone("wjet_JESDown");   
+  TH1F* wjet_JESDown = (TH1F*)(fwjet->Get("JESMinus/Iso/KinFit/"+histname))->Clone("wjet_JESDown");   
   wjet_JESDown->Scale(scale_factor);   
   wjet_JESDown->Write();
   // JER shape
-  TH1F* wjet_JERUp = (fwjet->Get("JERPlus/"+histname))->Clone("wjet_JERUp");
+  TH1F* wjet_JERUp = (TH1F*)(fwjet->Get("JERPlus/Iso/KinFit/"+histname))->Clone("wjet_JERUp");
   wjet_JERUp->Scale(scale_factor);
   wjet_JERUp->Write();
-  TH1F* wjet_JERDown = (fwjet->Get("JERMinus/"+histname))->Clone("wjet_JERDown");
+  TH1F* wjet_JERDown = (TH1F*)(fwjet->Get("JERMinus/Iso/KinFit/"+histname))->Clone("wjet_JERDown");
   wjet_JERDown->Scale(scale_factor);
   wjet_JERDown->Write();
 
-  TH1F* wjet_bTagUp = (fwjet->Get("bTagPlus/"+histname))->Clone("wjet_bTagUp");   
+  TH1F* wjet_bTagUp = (TH1F*)(fwjet->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("wjet_bTagUp");   
   wjet_bTagUp->Scale(scale_factor);   
-  TH1F* wjet_bTagDown = (fwjet->Get("bTagMinus/"+histname))->Clone("wjet_bTagDown");    
+  TH1F* wjet_bTagDown = (TH1F*)(fwjet->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("wjet_bTagDown");    
   wjet_bTagDown->Scale(scale_factor);
-    
+  
+  /*
   TH1F* wjet_ResJESUp = (TH1F*)wjet->Clone("wjet_ResJESUp");
   wjet_ResJESUp->Reset();
   for(int i = 1; i< wjet->GetNbinsX(); i++){
@@ -198,39 +232,47 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     wjet_ResJESDown->SetBinContent(i, wjet->GetBinContent(i)*(1-h_data_diff->GetBinContent(i)));
   }
   wjet_ResJESDown->Write("wjet_ResJESDown");
-  
+  */
 
-  TFile* fzjet = TFile::Open(inputFilePath+"zjet_ele_selection.root", "READ"); 
+  ////////////
+  // Z+Jets
+  ///////////
+  
+  TFile* fzjet = TFile::Open(inputFilePath+"all_DY.root", "READ"); 
   if(fzjet == 0) return; 
   if(fzjet->IsZombie()){fzjet->Close(); return;} 
 
   fout->cd();
-  TH1F* zjet = (fzjet->Get("base/"+histname))->Clone("zjet"); 
+  TH1F* zjet = (TH1F*)(fzjet->Get("base/Iso/KinFit/"+histname))->Clone("zjet"); 
   zjet->Scale(scale_factor); 
   zjet->Write();
   // JES shape
-  TH1F* zjet_JESUp = (fzjet->Get("JESPlus/"+histname))->Clone("zjet_JESUp");  
+  TH1F* zjet_JESUp = (TH1F*)(fzjet->Get("JESPlus/Iso/KinFit/"+histname))->Clone("zjet_JESUp");  
   zjet_JESUp->Scale(scale_factor);  
   zjet_JESUp->Write(); 
-  TH1F* zjet_JESDown = (fzjet->Get("JESMinus/"+histname))->Clone("zjet_JESDown");   
+  TH1F* zjet_JESDown = (TH1F*)(fzjet->Get("JESMinus/Iso/KinFit/"+histname))->Clone("zjet_JESDown");   
   zjet_JESDown->Scale(scale_factor);
+  
+  // carefull
+  /*
   if(zjet_JESDown->Integral()<=0){
     zjet_JESDown->Add(zjet, 0.01/zjet->Integral());
   }
+  */
   zjet_JESDown->Write();
   // JER shape
-  TH1F* zjet_JERUp = (fzjet->Get("JERPlus/"+histname))->Clone("zjet_JERUp");
+  TH1F* zjet_JERUp = (TH1F*)(fzjet->Get("JERPlus/Iso/KinFit/"+histname))->Clone("zjet_JERUp");
   zjet_JERUp->Scale(scale_factor);
   zjet_JERUp->Write();
-  TH1F* zjet_JERDown = (fzjet->Get("JERMinus/"+histname))->Clone("zjet_JERDown");
+  TH1F* zjet_JERDown = (TH1F*)(fzjet->Get("JERMinus/Iso/KinFit/"+histname))->Clone("zjet_JERDown");
   zjet_JERDown->Scale(scale_factor);
   zjet_JERDown->Write();
 
-  TH1F* zjet_bTagUp = (fzjet->Get("bTagPlus/"+histname))->Clone("zjet_bTagUp");   
+  TH1F* zjet_bTagUp = (TH1F*)(fzjet->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("zjet_bTagUp");   
   zjet_bTagUp->Scale(scale_factor);   
-  TH1F* zjet_bTagDown = (fzjet->Get("bTagMinus/"+histname))->Clone("zjet_bTagDown");    
+  TH1F* zjet_bTagDown = (TH1F*)(fzjet->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("zjet_bTagDown");    
   zjet_bTagDown->Scale(scale_factor);    
-
+  /*
   TH1F* zjet_ResJESUp = (TH1F*)zjet->Clone("zjet_ResJESUp");
   zjet_ResJESUp->Reset();
   for(int i = 1; i< zjet->GetNbinsX(); i++){
@@ -244,36 +286,41 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     zjet_ResJESDown->SetBinContent(i, zjet->GetBinContent(i)*(1-h_data_diff->GetBinContent(i)));
   }
   zjet_ResJESDown->Write("zjet_ResJESDown");
+  */
 
+  ////////////
+  // SingleTop
+  ///////////
 
-  TFile* fstop = TFile::Open(inputFilePath+"singletop_ele_selection.root", "READ"); 
+  TFile* fstop = TFile::Open(inputFilePath+"all_ST.root", "READ"); 
   if(fstop == 0) return; 
   if(fstop->IsZombie()){fstop->Close(); return;} 
  
   fout->cd();
-  TH1F* stop = (fstop->Get("base/"+histname))->Clone("stop"); 
+  TH1F* stop = (TH1F*)(fstop->Get("base/Iso/KinFit/"+histname))->Clone("stop"); 
   stop->Scale(scale_factor); 
   stop->Write();
   // JES shape
-  TH1F* stop_JESUp = (fstop->Get("JESPlus/"+histname))->Clone("stop_JESUp");  
+  TH1F* stop_JESUp = (TH1F*)(fstop->Get("JESPlus/Iso/KinFit/"+histname))->Clone("stop_JESUp");  
   stop_JESUp->Scale(scale_factor);  
   stop_JESUp->Write(); 
-  TH1F* stop_JESDown = (fstop->Get("JESMinus/"+histname))->Clone("stop_JESDown");   
+  TH1F* stop_JESDown = (TH1F*)(fstop->Get("JESMinus/Iso/KinFit/"+histname))->Clone("stop_JESDown");   
   stop_JESDown->Scale(scale_factor);   
   stop_JESDown->Write(); 
   // JER shape
-  TH1F* stop_JERUp = (fstop->Get("JERPlus/"+histname))->Clone("stop_JERUp");
+  TH1F* stop_JERUp = (TH1F*)(fstop->Get("JERPlus/Iso/KinFit/"+histname))->Clone("stop_JERUp");
   stop_JERUp->Scale(scale_factor);
   stop_JERUp->Write();
-  TH1F* stop_JERDown = (fstop->Get("JERMinus/"+histname))->Clone("stop_JERDown");
+  TH1F* stop_JERDown = (TH1F*)(fstop->Get("JERMinus/Iso/KinFit/"+histname))->Clone("stop_JERDown");
   stop_JERDown->Scale(scale_factor);
   stop_JERDown->Write();
 
-  TH1F* stop_bTagUp = (fstop->Get("bTagPlus/"+histname))->Clone("stop_bTagUp");   
+  TH1F* stop_bTagUp = (TH1F*)(fstop->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("stop_bTagUp");   
   stop_bTagUp->Scale(scale_factor);   
-  TH1F* stop_bTagDown = (fstop->Get("bTagMinus/"+histname))->Clone("stop_bTagDown");    
+  TH1F* stop_bTagDown = (TH1F*)(fstop->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("stop_bTagDown");    
   stop_bTagDown->Scale(scale_factor);    
 
+  /*
   TH1F* stop_ResJESUp = (TH1F*)stop->Clone("stop_ResJESUp");
   stop_ResJESUp->Reset();
   for(int i = 1; i< stop->GetNbinsX(); i++){
@@ -287,36 +334,41 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     stop_ResJESDown->SetBinContent(i, stop->GetBinContent(i)*(1-h_data_diff->GetBinContent(i)));
   }
   stop_ResJESDown->Write("stop_ResJESDown");
+  */
 
-
-  TFile* fdiboson = TFile::Open(inputFilePath+"diboson_ele_selection.root", "READ"); 
+  ////////////
+  // Dibosons
+  ///////////
+  
+  TFile* fdiboson = TFile::Open(inputFilePath+"all_VV.root", "READ"); 
   if(fdiboson == 0) return; 
   if(fdiboson->IsZombie()){fdiboson->Close(); return;} 
 
   fout->cd();
-  TH1F* diboson = (fdiboson->Get("base/"+histname))->Clone("diboson"); 
+  TH1F* diboson = (TH1F*)(fdiboson->Get("base/Iso/KinFit/"+histname))->Clone("diboson"); 
   diboson->Scale(scale_factor); 
   diboson->Write(); 
   // JES shape
-  TH1F* diboson_JESUp = (fdiboson->Get("JESPlus/"+histname))->Clone("diboson_JESUp");  
+  TH1F* diboson_JESUp = (TH1F*)(fdiboson->Get("JESPlus/Iso/KinFit/"+histname))->Clone("diboson_JESUp");  
   diboson_JESUp->Scale(scale_factor);  
   diboson_JESUp->Write(); 
-  TH1F* diboson_JESDown = (fdiboson->Get("JESMinus/"+histname))->Clone("diboson_JESDown");   
+  TH1F* diboson_JESDown = (TH1F*)(fdiboson->Get("JESMinus/Iso/KinFit/"+histname))->Clone("diboson_JESDown");   
   diboson_JESDown->Scale(scale_factor);   
   diboson_JESDown->Write(); 
   // JER shape
-  TH1F* diboson_JERUp = (fdiboson->Get("JERPlus/"+histname))->Clone("diboson_JERUp");
+  TH1F* diboson_JERUp = (TH1F*)(fdiboson->Get("JERPlus/Iso/KinFit/"+histname))->Clone("diboson_JERUp");
   diboson_JERUp->Scale(scale_factor);
   diboson_JERUp->Write();
-  TH1F* diboson_JERDown = (fdiboson->Get("JERMinus/"+histname))->Clone("diboson_JERDown");
+  TH1F* diboson_JERDown = (TH1F*)(fdiboson->Get("JERMinus/Iso/KinFit/"+histname))->Clone("diboson_JERDown");
   diboson_JERDown->Scale(scale_factor);
   diboson_JERDown->Write();
 
-  TH1F* diboson_bTagUp = (fdiboson->Get("bTagPlus/"+histname))->Clone("diboson_bTagUp");   
+  TH1F* diboson_bTagUp = (TH1F*)(fdiboson->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("diboson_bTagUp");   
   diboson_bTagUp->Scale(scale_factor);   
-  TH1F* diboson_bTagDown = (fdiboson->Get("bTagMinus/"+histname))->Clone("diboson_bTagDown");    
+  TH1F* diboson_bTagDown = (TH1F*)(fdiboson->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("diboson_bTagDown");    
   diboson_bTagDown->Scale(scale_factor);    
-
+  
+  /*
   TH1F* diboson_ResJESUp = (TH1F*)diboson->Clone("diboson_ResJESUp");
   diboson_ResJESUp->Reset();
   for(int i = 1; i< diboson->GetNbinsX(); i++){
@@ -330,36 +382,41 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     diboson_ResJESDown->SetBinContent(i, diboson->GetBinContent(i)*(1-h_data_diff->GetBinContent(i)));
   }
   diboson_ResJESDown->Write("diboson_ResJESDown");
+  */
+  
+  ////////////
+  // QCD (FIXME with data-driven)
+  ///////////
 
-
-  TFile* fqcd = TFile::Open(inputFilePath+"qcd_ele_selection.root", "READ"); 
+  TFile* fqcd = TFile::Open(inputFilePath+"all_QCD.root", "READ"); 
   if(fqcd == 0) return; 
   if(fqcd->IsZombie()){fqcd->Close(); return;} 
  
   fout->cd();
-  TH1F* qcd = (fqcd->Get("base/"+histname))->Clone("qcd"); 
+  TH1F* qcd = (TH1F*)(fqcd->Get("base/Iso/KinFit/"+histname))->Clone("qcd"); 
   qcd->Scale(scale_factor); 
   qcd->Write();
   // JES shape
-  TH1F* qcd_JESUp = (fqcd->Get("JESPlus/"+histname))->Clone("qcd_JESUp");  
+  TH1F* qcd_JESUp = (TH1F*)(fqcd->Get("JESPlus/Iso/KinFit/"+histname))->Clone("qcd_JESUp");  
   qcd_JESUp->Scale(scale_factor);  
   qcd_JESUp->Write(); 
-  TH1F* qcd_JESDown = (fqcd->Get("JESMinus/"+histname))->Clone("qcd_JESDown");   
+  TH1F* qcd_JESDown = (TH1F*)(fqcd->Get("JESMinus/Iso/KinFit/"+histname))->Clone("qcd_JESDown");   
   qcd_JESDown->Scale(scale_factor);   
   qcd_JESDown->Write(); 
   // JER shape
-  TH1F* qcd_JERUp = (fqcd->Get("JERPlus/"+histname))->Clone("qcd_JERUp");
+  TH1F* qcd_JERUp = (TH1F*)(fqcd->Get("JERPlus/Iso/KinFit/"+histname))->Clone("qcd_JERUp");
   qcd_JERUp->Scale(scale_factor);
   qcd_JERUp->Write();
-  TH1F* qcd_JERDown = (fqcd->Get("JERMinus/"+histname))->Clone("qcd_JERDown");
+  TH1F* qcd_JERDown = (TH1F*)(fqcd->Get("JERMinus/Iso/KinFit/"+histname))->Clone("qcd_JERDown");
   qcd_JERDown->Scale(scale_factor);
   qcd_JERDown->Write();
 
-  TH1F* qcd_bTagUp = (fqcd->Get("bTagPlus/"+histname))->Clone("qcd_bTagUp");   
+  TH1F* qcd_bTagUp = (TH1F*)(fqcd->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("qcd_bTagUp");   
   qcd_bTagUp->Scale(scale_factor);   
-  TH1F* qcd_bTagDown = (fqcd->Get("bTagMinus/"+histname))->Clone("qcd_bTagDown");    
+  TH1F* qcd_bTagDown = (TH1F*)(fqcd->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("qcd_bTagDown");    
   qcd_bTagDown->Scale(scale_factor);    
-
+  
+  /*
   TH1F* qcd_ResJESUp = (TH1F*)qcd->Clone("qcd_ResJESUp");
   qcd_ResJESUp->Reset();
   for(int i = 1; i< qcd->GetNbinsX(); i++){
@@ -373,22 +430,26 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     qcd_ResJESDown->SetBinContent(i, qcd->GetBinContent(i)*(1-h_data_diff->GetBinContent(i)));
   }
   qcd_ResJESDown->Write("qcd_ResJESDown");
+  */
+  
+  // FIXME
+  TFile* fdata = TFile::Open(inputFilePath+"all_muData.root", "READ");;
 
-
-
+  /*
   if(lumi_cat.find("lumiA")!=string::npos) TFile* fdata = TFile::Open(inputFilePath+"data_2012A_ele_selection.root", "READ");
   else if(lumi_cat.find("lumiB")!=string::npos) TFile* fdata = TFile::Open(inputFilePath+"data_2012B_ele_selection.root", "READ");
   else if(lumi_cat.find("lumiC")!=string::npos) TFile* fdata = TFile::Open(inputFilePath+"data_2012C_ele_selection.root", "READ");
   else if(lumi_cat.find("lumiD")!=string::npos) TFile* fdata = TFile::Open(inputFilePath+"data_2012D_ele_selection.root", "READ");
-  else  TFile* fdata = TFile::Open(inputFilePath+"data_ele_selection.root", "READ");
-
+  else  TFile* fdata = TFile::Open(inputFilePath+"all_muData.root", "READ");
+  */
+  
   if(fdata == 0) return;
   if(fdata->IsZombie()){fdata->Close(); return;}
   fout->cd();
-  TH1F* data_obs = (fdata->Get("base/"+histname))->Clone("data_obs");
+  TH1F* data_obs = (TH1F*)(fdata->Get("base/Iso/KinFit/"+histname))->Clone("data_obs");
   data_obs->Write("data_obs");
 
-/*  
+  /*  
   fout->cd();
   TH1F* data_obs = (TH1F*)ttbar->Clone("data_obs");
   data_obs->Reset();
@@ -398,32 +459,31 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   data_obs->Add(stop);
   data_obs->Add(diboson);
   data_obs->Write("data_obs");
-*/
+  */
 
   vector<int>massPoints;
   massPoints.push_back(90);
   massPoints.push_back(100);
-  massPoints.push_back(120);
+  //massPoints.push_back(120);
   massPoints.push_back(140);
-  massPoints.push_back(150);
-  massPoints.push_back(155);
-  massPoints.push_back(160);
+  //massPoints.push_back(150);
+  //massPoints.push_back(155);
+  //massPoints.push_back(160);
 
   for(int i = 0; i < massPoints.size(); i++){
     cout<<" mass point "<<massPoints[i]<<endl;
-    TFile* fwh = TFile::Open(inputFilePath+Form("wh_M_%d_ele_selection.root", massPoints[i]), "READ");
+    TFile* fwh = TFile::Open(inputFilePath+Form("all_Hplus%d.root", massPoints[i]), "READ");
     if(fwh == 0) return;
     if(fwh->IsZombie()){fwh->Close(); return;}
  
     fout->cd();
-    TH1F* wh = (TH1F*)(fwh->Get("base/"+histname))->Clone(); 
+    TH1F* wh = (TH1F*)(fwh->Get("base/Iso/KinFit/"+histname))->Clone(); 
     //    TH1F* wh_temp = (TH1F*)(fwh->Get("base/"+histname))->Clone();
-    TH1F* wh_topPtweight = (TH1F*)(fwh->Get("base/AvTopPtWeight"))->Clone(); // get top pt weight in WH
-    //    wh->SetName(Form("WH%d",massPoints[i]));
-    wh->Scale(scale_factor/wh_topPtweight->GetBinContent(2)); // apply avg top pt weight
+    TH1F* wh_topPtweight = (TH1F*)(fwh->Get("base/SF_topPtWeights"))->Clone(); // get top pt weight in WH
+    wh->Scale(scale_factor/wh_topPtweight->GetMean()); // apply avg top pt weight
     wh->SetName(Form("WH%d",massPoints[i]));
     wh->Write(Form("WH%d",massPoints[i])); 
-    
+    /*
     TH1F* wh_ResJESUp = (TH1F*)(fwh->Get("base/"+histname))->Clone();
     wh_ResJESUp->Reset();
     for(int ibin = 1; ibin < wh->GetNbinsX(); ibin++){
@@ -439,45 +499,48 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     }
     wh_ResJESDown->SetName(Form("WH%d_ResJESDown",massPoints[i]));
     wh_ResJESDown->Write(Form("WH%d_ResJESDown",massPoints[i]));
-    
+    */
 
-    TH1F* wh_JESUp = (TH1F*)(fwh->Get("JESPlus/"+histname))->Clone();  
+    TH1F* wh_JESUp = (TH1F*)(fwh->Get("JESPlus/Iso/KinFit/"+histname))->Clone();  
     wh_JESUp->SetName(Form("WH%d_JESUp",massPoints[i]));
-    wh_JESUp->Scale(scale_factor/wh_topPtweight->GetBinContent(2));  
+    wh_JESUp->Scale(scale_factor/wh_topPtweight->GetMean());  
     wh_JESUp->Write(Form("WH%d_JESUp",massPoints[i])); 
 
-    TH1F* wh_JESDown = (TH1F*)(fwh->Get("JESMinus/"+histname))->Clone();
+    TH1F* wh_JESDown = (TH1F*)(fwh->Get("JESMinus/Iso/KinFit/"+histname))->Clone();
     wh_JESDown->SetName(Form("WH%d_JESDown",massPoints[i]));
-    wh_JESDown->Scale(scale_factor/wh_topPtweight->GetBinContent(2));   
+    wh_JESDown->Scale(scale_factor/wh_topPtweight->GetMean());   
     wh_JESDown->Write(Form("WH%d_JESDown",massPoints[i])); 
 
-    TH1F* wh_JERUp = (TH1F*)(fwh->Get("JERPlus/"+histname))->Clone();
+    TH1F* wh_JERUp = (TH1F*)(fwh->Get("JERPlus/Iso/KinFit/"+histname))->Clone();
     wh_JERUp->SetName(Form("WH%d_JERUp",massPoints[i]));
-    wh_JERUp->Scale(scale_factor/wh_topPtweight->GetBinContent(2));
+    wh_JERUp->Scale(scale_factor/wh_topPtweight->GetMean());
     wh_JERUp->Write(Form("WH%d_JERUp",massPoints[i]));
 
-    TH1F* wh_JERDown = (TH1F*)(fwh->Get("JERMinus/"+histname))->Clone();
+    TH1F* wh_JERDown = (TH1F*)(fwh->Get("JERMinus/Iso/KinFit/"+histname))->Clone();
     wh_JERDown->SetName(Form("WH%d_JERDown",massPoints[i]));
-    wh_JERDown->Scale(scale_factor/wh_topPtweight->GetBinContent(2));
+    wh_JERDown->Scale(scale_factor/wh_topPtweight->GetMean());
     wh_JERDown->Write(Form("WH%d_JERDown",massPoints[i]));
-
-    TH1F* wh_topPtUp = (TH1F*)(fwh->Get("TopPtPlus/"+histname))->Clone();
+    
+    // FIXME
+    /*
+    TH1F* wh_topPtUp = (TH1F*)(fwh->Get("TopPtPlus/Iso/KinFit/"+histname))->Clone();
     wh_topPtUp->SetName(Form("WH%d_topPtUp",massPoints[i]));
     TH1F* wh_topPtweightPlus = (TH1F*)(fwh->Get("TopPtPlus/AvTopPtWeight"))->Clone();
     wh_topPtUp->Scale(scale_factor/wh_topPtweightPlus->GetBinContent(2));
     wh_topPtUp->Write(Form("WH%d_topPtUp",massPoints[i]));
     
-    TH1F* wh_topPtDown = (TH1F*)(fwh->Get("TopPtMinus/"+histname))->Clone();
+    TH1F* wh_topPtDown = (TH1F*)(fwh->Get("TopPtMinus/Iso/KinFit/"+histname))->Clone();
     wh_topPtDown->SetName(Form("WH%d_topPtDown",massPoints[i]));
     TH1F* wh_topPtweightMinus = (TH1F*)(fwh->Get("TopPtMinus/AvTopPtWeight"))->Clone();
     wh_topPtDown->Scale(scale_factor/wh_topPtweightMinus->GetBinContent(2));
     wh_topPtDown->Write(Form("WH%d_topPtDown",massPoints[i]));
+    */
 
-    TH1F* wh_bTagUp = (TH1F*)(fwh->Get("bTagPlus/"+histname))->Clone(Form("WH%d_bTagUp",massPoints[i]));   
-    wh_bTagUp->Scale(scale_factor/wh_topPtweight->GetBinContent(2));   
+    TH1F* wh_bTagUp = (TH1F*)(fwh->Get("bTagPlus/Iso/KinFit/"+histname))->Clone(Form("WH%d_bTagUp",massPoints[i]));   
+    wh_bTagUp->Scale(scale_factor/wh_topPtweight->GetMean());   
 
-    TH1F* wh_bTagDown = (TH1F*)(fwh->Get("bTagMinus/"+histname))->Clone(Form("WH%d_bTagDown",massPoints[i])); 
-    wh_bTagDown->Scale(scale_factor/wh_topPtweight->GetBinContent(2));    
+    TH1F* wh_bTagDown = (TH1F*)(fwh->Get("bTagMinus/Iso/KinFit/"+histname))->Clone(Form("WH%d_bTagDown",massPoints[i])); 
+    wh_bTagDown->Scale(scale_factor/wh_topPtweight->GetMean());    
     
     //Temporary arrangement for HH, not fully correct
     double hh_Yield = 0;
@@ -516,6 +579,8 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     hh_JERDown->SetName(Form("HH%d_JERDown",massPoints[i]));
     hh_JERDown->Write(Form("HH%d_JERDown",massPoints[i]));
 
+    // FIXME
+    /*
     TH1F* hh_topPtUp = (TH1F*)wh_topPtUp->Clone();
     hh_topPtUp->Scale(hh_Yield/wh_topPtUp->Integral());
     hh_topPtUp->SetName(Form("HH%d_topPtUp",massPoints[i]));
@@ -525,6 +590,7 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     hh_topPtDown->Scale(hh_Yield/wh_topPtDown->Integral());
     hh_topPtDown->SetName(Form("HH%d_topPtDown",massPoints[i]));
     hh_topPtDown->Write(Form("HH%d_topPtDown",massPoints[i]));
+    */
 
     TH1F* hh_bTagUp = (TH1F*)wh_bTagUp->Clone(Form("HH%d_bTagUp",massPoints[i])); 
     hh_bTagUp->Scale(hh_Yield/hh_bTagUp->Integral()); 
@@ -564,7 +630,7 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
       in.open(Form("template/datacard_csbar_%s.txt", cat_name.c_str()));
     else in.open("template/datacard_csbar.txt");
     
-    ofstream out(Form("datacard_ele_csbar_%s_mH%d.txt", cat_name.c_str(), massPoints[i]));
+    ofstream out(Form("datacard_mu_csbar_%s_mH%d.txt", cat_name.c_str(), massPoints[i]));
     out.precision(8);
 
     time_t secs=time(0);
@@ -585,7 +651,7 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
 	  }
 	  else if(line.find("Description")!=string::npos){
 	    line.replace( line.find("YYY") , 3 , string(Form("%d", massPoints[i])) );
-	    line.replace( line.find("ZZZ") , 3 , string(Form("%f", scale_factor)) ); 
+	    line.replace( line.find("ZZZ") , 3 , string(Form("%f", totLumi)) ); 
 	    out << line << endl;
 	  }
 	  else if(line.find("shapes")!=string::npos){
@@ -713,4 +779,3 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   }
   fout->Close();
 }
-
