@@ -2,12 +2,4 @@
 
 To get limit:
 
-./runLimit_mu_mH.csh 90
-
-# To make limit plot
-
-root -l -b
-
-.L makePlot_Hp_combine.C
-
-plotAll()
+./runLimit_comb_mH150.csh
