@@ -42,25 +42,25 @@ void plot( TString stream  = "MuT",
   leg->SetFillColor(0);
 
 
-  float X[]        = {90,100,140};
+  float X[]        = {80, 90,100,120, 140, 150, 155, 160};
 
-  float obsY[]     = {0.,0.,0.};
-  float expY[]     = {0.,0.,0.};
+  float obsY[]     = {0.,0.,0, 0, 0, 0, 0,0};
+  float expY[]     = {0.,0.,0, 0, 0, 0, 0,0};
 		      
-  float expX1sL[]  = {0.,0.,0.};
-  float expX1sH[]  = {0.,0.,0.};
-  float expY1sL[]  = {0.,0.,0.};
-  float expY1sH[]  = {0.,0.,0.};
+  float expX1sL[]  = {0.,0.,0, 0, 0, 0, 0,0};
+  float expX1sH[]  = {0.,0.,0, 0, 0, 0, 0,0};
+  float expY1sL[]  = {0.,0.,0, 0, 0, 0, 0,0};
+  float expY1sH[]  = {0.,0.,0, 0, 0, 0, 0,0};
 		      
-  float expX2sL[]  = {0.,0.,0.};
-  float expX2sH[]  = {0.,0.,0.};
-  float expY2sL[]  = {0.,0.,0.};
-  float expY2sH[]  = {0.,0.,0.};
+  float expX2sL[]  = {0.,0.,0, 0, 0, 0, 0,0};
+  float expX2sH[]  = {0.,0.,0, 0, 0, 0, 0,0};
+  float expY2sL[]  = {0.,0.,0, 0, 0, 0, 0,0};
+  float expY2sH[]  = {0.,0.,0, 0, 0, 0, 0,0};
 
-  int nMassPoints = 3;
+  int nMassPoints = 8;
 
   for(unsigned int i = 0 ; i < nMassPoints; i++){
-
+   
     TFile f(Form("higgsCombine%s_%s.Asymptotic.mH%.0f.root",stream.Data(),channel.Data(),X[i]),"READ"); // higgsCombineChargedHiggs_mu.Asymptotic.mH140.root
     if(f.IsZombie()){
       cout << "Cannot open file for " << string(channel.Data()) << " and mass " << X[i] << endl;
@@ -80,7 +80,6 @@ void plot( TString stream  = "MuT",
       if(k==4) expY2sH[i] = r;
       if(k==5) obsY[i]    = r;
     }
-    
   }
   
   for(int i1 = 0 ; i1 < nMassPoints ; i1++){
@@ -89,7 +88,7 @@ void plot( TString stream  = "MuT",
     expY2sH[i1] = TMath::Abs(expY2sH[i1]-expY[i1]);
     expY2sL[i1] = TMath::Abs(expY2sL[i1]-expY[i1]);
     
-    cout << "Mass " << X[i1] << " => " << expY2sL[i1] << ", " << expY1sL[i1] << ", " << expY1sH[i1] << ", "
+    cout << "Mass: " << X[i1] << " => " << expY2sL[i1] << ", " << expY1sL[i1] << ", " << expY1sH[i1] << ", "
 	 << expY2sH[i1] << ", "<< expY[i1] << ", " << endl;
   }
   
