@@ -111,7 +111,6 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = ""
   ttbar_JERDown->Scale(scale_factor/ttbar_topPtweight->GetMean());
   ttbar_JERDown->Write("ttbar_JERDown");
 
-  cout<<"bbb"<<endl;
   //// ---------- Edited this part ------------------
   TH1F* ttbar_topPtUp = (TH1F*)(fttbar->Get("TopPtPlus/Iso/KinFit/"+histname))->Clone("ttbar_topPtUp");
   ttbar_topPtUp->SetName("ttbar_topPtUp");
@@ -396,10 +395,11 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = ""
  
   fout->cd();
   //// ---------- Edited this part ------------------
-  TFile* fqcd_dataDriven = TFile::Open(inputFilePath+"all_QCD_dd.root", "READ"); 
+  //TFile* fqcd_dataDriven = TFile::Open(inputFilePath+"all_QCD_dd.root", "READ"); 
+  TFile* fqcd_dataDriven = new TFile(inputFilePath+"all_QCD_dd.root"); 
   if(fqcd == 0) return; 
   if(fqcd->IsZombie()){fqcd->Close(); return;} 
-  TH1F* qcd = (TH1F*)(fqcd_dataDriven->Get("QCD_from_Data"))->Clone("qcd"); 
+  TH1F* qcd = (TH1F*)(fqcd_dataDriven->Get("QCD_from_Data"))->Clone("qcd");
   ///// ----------------------------------------------
   
   qcd->Scale(scale_factor); 
@@ -689,6 +689,7 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = ""
 		<< space << zjet->Integral()
 		<< space << stop->Integral()
 		<< space << diboson->Integral()
+		<< space << qcd->Integral()
 	        << endl;
 	    //	<< space << "Projected event rates"<<endl;
 	  }
