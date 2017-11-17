@@ -57,8 +57,8 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = ""
   
   cout << "datacards preparation: " << Form("ohhhh_%4s", cat_name.c_str()) << endl;
   
-  TString inputFilePath("$PWD/stack_20171104_Mu_sys/");
-  //TString inputFilePath("/afs/cern.ch/user/r/rverma/public/stack_20171013_Mu_sys_new/");
+  //  TString inputFilePath("$PWD/stack_20171104_Mu_sys/");
+  TString inputFilePath("/afs/cern.ch/work/r/rverma/public/stack_20171104_Mu_sys/");
 
   cout << "inputpath:  " << inputFilePath << endl;
   TFile* fttbar = TFile::Open(inputFilePath+"all_TTJetsP.root", "READ");  // all_TTJetsP.root and all_TTJetsM (P stand for Powheg and M = Madgraph)
@@ -389,21 +389,24 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = ""
   // QCD (FIXME with data-driven)
   ///////////
 
-  TFile* fqcd = TFile::Open(inputFilePath+"all_QCD.root", "READ"); 
-  if(fqcd == 0) return; 
-  if(fqcd->IsZombie()){fqcd->Close(); return;} 
- 
-  fout->cd();
+//  TFile* fqcd = TFile::Open(inputFilePath+"all_QCD.root", "READ"); 
+//  if(fqcd == 0) return; 
+//  if(fqcd->IsZombie()){fqcd->Close(); return;} 
+// 
+//  fout->cd();
   //// ---------- Edited this part ------------------
   //TFile* fqcd_dataDriven = TFile::Open(inputFilePath+"all_QCD_dd.root", "READ"); 
-  TFile* fqcd_dataDriven = new TFile(inputFilePath+"all_QCD_dd.root"); 
+  TFile* fqcd = new TFile(inputFilePath+"all_QCD_dd.root"); 
   if(fqcd == 0) return; 
   if(fqcd->IsZombie()){fqcd->Close(); return;} 
-  TH1F* qcd = (TH1F*)(fqcd_dataDriven->Get("QCD_from_Data"))->Clone("qcd");
+  fout->cd();
+  
+  TH1F* qcd = (TH1F*)(fqcd->Get("QCD_from_Data"))->Clone("qcd");
   ///// ----------------------------------------------
   
   qcd->Scale(scale_factor); 
   qcd->Write();
+  /*
   // JES shape
   TH1F* qcd_JESUp = (TH1F*)(fqcd->Get("JESPlus/Iso/KinFit/"+histname))->Clone("qcd_JESUp");  
   qcd_JESUp->Scale(scale_factor);  
@@ -424,7 +427,6 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = ""
   TH1F* qcd_bTagDown = (TH1F*)(fqcd->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("qcd_bTagDown");    
   qcd_bTagDown->Scale(scale_factor);    
   
-  /*
   TH1F* qcd_ResJESUp = (TH1F*)qcd->Clone("qcd_ResJESUp");
   qcd_ResJESUp->Reset();
   for(int i = 1; i< qcd->GetNbinsX(); i++){
