@@ -8,7 +8,8 @@
 #include <time.h>
 #include <algorithm> 
 
-void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "cat1", string lumi_cat = "lumiA")
+void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "", string lumi_cat = "lumiA")
+//void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "cat1", string lumi_cat = "lumiA")
 {
   // Luminosity measured by pixelLumicalc
   
@@ -56,7 +57,8 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   
   cout << "datacards preparation: " << Form("ohhhh_%4s", cat_name.c_str()) << endl;
   
-  TString inputFilePath("/afs/cern.ch/user/r/rverma/public/stack_20171013_Mu_sys_new/");
+  //  TString inputFilePath("$PWD/stack_20171104_Mu_sys/");
+  TString inputFilePath("/afs/cern.ch/work/r/rverma/public/stack_20171104_Mu_sys/");
 
   cout << "inputpath:  " << inputFilePath << endl;
   TFile* fttbar = TFile::Open(inputFilePath+"all_TTJetsP.root", "READ");  // all_TTJetsP.root and all_TTJetsM (P stand for Powheg and M = Madgraph)
@@ -108,27 +110,26 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   ttbar_JERDown->SetName("ttbar_JERDown");
   ttbar_JERDown->Scale(scale_factor/ttbar_topPtweight->GetMean());
   ttbar_JERDown->Write("ttbar_JERDown");
-  
-  // FIXME
-  /*
-  TH1F* ttbar_topPtUp = (fttbar->Get("TopPtPlus/"+histname))->Clone("ttbar_topPtUp");
+
+  //// ---------- Edited this part ------------------
+  TH1F* ttbar_topPtUp = (TH1F*)(fttbar->Get("TopPtPlus/Iso/KinFit/"+histname))->Clone("ttbar_topPtUp");
   ttbar_topPtUp->SetName("ttbar_topPtUp");
-  TH1F* ttbar_topPtweightPlus = (fttbar->Get("TopPtPlus/AvTopPtWeight"))->Clone("ttbar_topPtweightPlus");
+  TH1F* ttbar_topPtweightPlus = (TH1F*)(fttbar->Get("TopPtPlus/SF_topPtWeights"))->Clone("ttbar_topPtweightPlus");
   ttbar_topPtUp->Scale(scale_factor/ttbar_topPtweightPlus->GetBinContent(2));
   ttbar_topPtUp->Write("ttbar_topPtUp");
 
-  TH1F* ttbar_topPtDown = (fttbar->Get("TopPtMinus/"+histname))->Clone("ttbar_topPtDown");
+  TH1F* ttbar_topPtDown = (TH1F*)(fttbar->Get("TopPtMinus/Iso/KinFit/"+histname))->Clone("ttbar_topPtDown");
   ttbar_topPtDown->SetName("ttbar_topPtDown");
-  TH1F* ttbar_topPtweightMinus = (fttbar->Get("TopPtMinus/AvTopPtWeight"))->Clone("ttbar_topPtweightMinus");
+  TH1F* ttbar_topPtweightMinus = (TH1F*)(fttbar->Get("TopPtMinus/SF_topPtWeights"))->Clone("ttbar_topPtweightMinus");
   ttbar_topPtDown->Scale(scale_factor/ttbar_topPtweightMinus->GetBinContent(2));
   ttbar_topPtDown->Write("ttbar_topPtDown");
-  */
+  /// ---------------------------------------------
+  
   
   TH1F* ttbar_bTagUp = (TH1F*)(fttbar->Get("bTagPlus/Iso/KinFit/"+histname))->Clone("ttbar_bTagUp");  
   ttbar_bTagUp->Scale(scale_factor/ttbar_topPtweight->GetMean());  
   TH1F* ttbar_bTagDown = (TH1F*)(fttbar->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("ttbar_bTagDown");   
   ttbar_bTagDown->Scale(scale_factor/ttbar_topPtweight->GetMean());   
-
   /*
   TH1F* ttbar_ResJESUp = (TH1F*)ttbar->Clone("ttbar_ResJESUp");
   ttbar_ResJESUp->Reset();
@@ -388,14 +389,24 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   // QCD (FIXME with data-driven)
   ///////////
 
-  TFile* fqcd = TFile::Open(inputFilePath+"all_QCD.root", "READ"); 
+//  TFile* fqcd = TFile::Open(inputFilePath+"all_QCD.root", "READ"); 
+//  if(fqcd == 0) return; 
+//  if(fqcd->IsZombie()){fqcd->Close(); return;} 
+// 
+//  fout->cd();
+  //// ---------- Edited this part ------------------
+  //TFile* fqcd_dataDriven = TFile::Open(inputFilePath+"all_QCD_dd.root", "READ"); 
+  TFile* fqcd = new TFile(inputFilePath+"all_QCD_dd.root"); 
   if(fqcd == 0) return; 
   if(fqcd->IsZombie()){fqcd->Close(); return;} 
- 
   fout->cd();
-  TH1F* qcd = (TH1F*)(fqcd->Get("base/Iso/KinFit/"+histname))->Clone("qcd"); 
+  
+  TH1F* qcd = (TH1F*)(fqcd->Get("QCD_from_Data"))->Clone("qcd");
+  ///// ----------------------------------------------
+  
   qcd->Scale(scale_factor); 
   qcd->Write();
+  /*
   // JES shape
   TH1F* qcd_JESUp = (TH1F*)(fqcd->Get("JESPlus/Iso/KinFit/"+histname))->Clone("qcd_JESUp");  
   qcd_JESUp->Scale(scale_factor);  
@@ -416,7 +427,6 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   TH1F* qcd_bTagDown = (TH1F*)(fqcd->Get("bTagMinus/Iso/KinFit/"+histname))->Clone("qcd_bTagDown");    
   qcd_bTagDown->Scale(scale_factor);    
   
-  /*
   TH1F* qcd_ResJESUp = (TH1F*)qcd->Clone("qcd_ResJESUp");
   qcd_ResJESUp->Reset();
   for(int i = 1; i< qcd->GetNbinsX(); i++){
@@ -462,13 +472,14 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
   */
 
   vector<int>massPoints;
+  massPoints.push_back(80);
   massPoints.push_back(90);
   massPoints.push_back(100);
-  //massPoints.push_back(120);
+  massPoints.push_back(120);
   massPoints.push_back(140);
-  //massPoints.push_back(150);
-  //massPoints.push_back(155);
-  //massPoints.push_back(160);
+  massPoints.push_back(150);
+  massPoints.push_back(155);
+  massPoints.push_back(160);
 
   for(int i = 0; i < massPoints.size(); i++){
     cout<<" mass point "<<massPoints[i]<<endl;
@@ -522,19 +533,19 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
     wh_JERDown->Write(Form("WH%d_JERDown",massPoints[i]));
     
     // FIXME
-    /*
+    //// ---------- Edited this part ------------------
     TH1F* wh_topPtUp = (TH1F*)(fwh->Get("TopPtPlus/Iso/KinFit/"+histname))->Clone();
     wh_topPtUp->SetName(Form("WH%d_topPtUp",massPoints[i]));
-    TH1F* wh_topPtweightPlus = (TH1F*)(fwh->Get("TopPtPlus/AvTopPtWeight"))->Clone();
+    TH1F* wh_topPtweightPlus = (TH1F*)(fwh->Get("TopPtPlus/SF_topPtWeights"))->Clone();
     wh_topPtUp->Scale(scale_factor/wh_topPtweightPlus->GetBinContent(2));
     wh_topPtUp->Write(Form("WH%d_topPtUp",massPoints[i]));
     
     TH1F* wh_topPtDown = (TH1F*)(fwh->Get("TopPtMinus/Iso/KinFit/"+histname))->Clone();
     wh_topPtDown->SetName(Form("WH%d_topPtDown",massPoints[i]));
-    TH1F* wh_topPtweightMinus = (TH1F*)(fwh->Get("TopPtMinus/AvTopPtWeight"))->Clone();
+    TH1F* wh_topPtweightMinus = (TH1F*)(fwh->Get("TopPtMinus/SF_topPtWeights"))->Clone();
     wh_topPtDown->Scale(scale_factor/wh_topPtweightMinus->GetBinContent(2));
     wh_topPtDown->Write(Form("WH%d_topPtDown",massPoints[i]));
-    */
+    //--------------------------------------------------------
 
     TH1F* wh_bTagUp = (TH1F*)(fwh->Get("bTagPlus/Iso/KinFit/"+histname))->Clone(Form("WH%d_bTagUp",massPoints[i]));   
     wh_bTagUp->Scale(scale_factor/wh_topPtweight->GetMean());   
@@ -635,13 +646,11 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
 
     time_t secs=time(0);
     tm *t=localtime(&secs);
-    
     while (in.good())
       {
 	in.getline(c,1000,'\n');
 	if (in.good()){
 	  string line(c);
-	  
 	  if(line.find("Date")!=string::npos){
 	    string day = string(Form("%d",t->tm_mday));
 	    string month = string(Form("%d",t->tm_mon+1));
@@ -682,6 +691,7 @@ void makeHPlusDataCardWithLumi(TString histname="mjj_kfit", string cat_name = "c
 		<< space << zjet->Integral()
 		<< space << stop->Integral()
 		<< space << diboson->Integral()
+		<< space << qcd->Integral()
 	        << endl;
 	    //	<< space << "Projected event rates"<<endl;
 	  }
