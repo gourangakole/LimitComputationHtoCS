@@ -38,13 +38,13 @@ void twoDim_To_1D_project(){
   c1->SetObjectStat(0);
 
 
-  TF2 *f2_new = new TF2("f2_new", "(x**2+y**2)",-5,5,-10,10); // -5<x<5; -10<y<10
-  TF1 *f1_new = new TF1("f1_new","(x**2+[0]**2)",-5,5);
+  TF2 *f2_new = new TF2("f2_new", "((x+2)**2+(y-1)**2)",-5,5,-10,10); // -5<x<5; -10<y<10
+  TF1 *f1_new = new TF1("f1_new","((x+2)**2+([0]-1)**2)",-5,5);
 
-  // project to x plane (by setting y value to yval (e.g. y = 2)
-  f1_new->SetParameter(0,2);
+  // project to x plane (by setting y value to yval (e.g. y = 1) [remeber: (-2,+1) is the minimum points]
+  f1_new->SetParameter(0,1); // setting [0] th parameter to "1" (equivalent y==1)
   f1_new->Draw();
-
+  
   gPad->SaveAs("1D_projection.pdf"); 
   
   /*
