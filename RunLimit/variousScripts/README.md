@@ -5,3 +5,7 @@
 ```
 root -l -b MLFunction.C
 ```
+Given TF2 and want TF1 for a partulcular value of one variable 
+```
+root -l -b twoDim_To_1D_project.C
+```
