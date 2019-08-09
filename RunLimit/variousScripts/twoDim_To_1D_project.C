@@ -23,92 +23,64 @@
 #include "TLatex.h"
 
 
-using namespace std;
+void twoDim_To_1D_project()
+{
+  TF2 *f2= new TF2("f2","(-(8.83+x*0.2169+y*0.8139)+(10*log(8.83+x*0.2169+y*0.8139))-(10*log(10))+10-(6.342+x*0.05957+y*2.5286)+(6*log(6.342+x*0.05957+y*2.5286))-(6*log(6))+6)",-20,50,-2.,2.);
+  TF2 *f2_= new TF2("f2_","(((-8.83-x*0.2169)+(10*log(8.83+x*0.2169))-(10*log(10))+10)+((-6.34195-y*2.529)+(6*log(6.34195+y*2.529))-(6*log(6))+6))",-20,50,-2.5,3);
+  //f2->Draw();
 
-//TF1 *f1;
-//TF2 *f2;
-
-void twoDim_To_1D_project(){
-
-  TCanvas *c1 = new TCanvas("c1","",5,30,650,600);
-  c1->SetGrid(0,0);
-  c1->SetFillStyle(4000);
-  c1->SetFillColor(10);
-  c1->SetTicky();
-  c1->SetObjectStat(0);
-
-
-  TF2 *f2_new = new TF2("f2_new", "((x+2)**2+(y-1)**2)",-5,5,-10,10); // -5<x<5; -10<y<10
-  TF1 *f1_new = new TF1("f1_new","((x+2)**2+([0]-1)**2)",-5,5);
-
-  // project to x plane (by setting y value to yval (e.g. y = 1) [remeber: (-2,+1) is the minimum points]
-  f1_new->SetParameter(0,1); // setting [0] th parameter to "1" (equivalent y==1)
-  f1_new->Draw();
-  
-  gPad->SaveAs("1D_projection.pdf"); 
-  
+  Double_t co=-0.1;
+  Double_t coh=2;
   /*
-  double xlim_min = 0.0;
-  double xlim_max = 5.0;
-  
-  TF1 *f1 = new TF1("f1","-2*log(x)+2*x",xlim_min,xlim_max);
-  double f_max = f1->GetMinimum();
-  double f1_up = (f_max + f_max/2.0);
-  double f1_down = (f_max - f_max/2.0);
-  cout << "f_max: " << f_max << " " << "f1_up: " << " " << f1_up << " " << "f1_down: " << f1_down << endl;
-
-  // interaction
-  double x_0 = f1->GetX(f_max); // equivalent to mu_0
-  cout << "x_0:  "<< x_0 << endl;
-  double x_min = f1->GetX(f1_up,xlim_min,x_0);
-  cout << "m_min: " << x_min << endl;
-  double x_max = f1->GetX(f1_up,x_0,xlim_max);
-
-  TLine *l1 = new TLine(x_min,f1_up,x_max,f1_up);
-  l1->SetLineColor(kGreen);
-  l1->SetLineWidth(2);
-
-  TLine *l_cen = new TLine(x_0,0.0,x_0,f_max);
-  l_cen->SetLineColor(kCyan);
-  l_cen->SetLineWidth(2);
-  l_cen->SetLineStyle(3);
-  
-  TLine *l_left = new TLine(x_min,0.0,x_min,f1_up);
-  l_left->SetLineColor(kCyan);
-  l_left->SetLineWidth(2);
-
-  TLine *l_right = new TLine(x_max,0.0,x_max,f1_up);
-  l_right->SetLineColor(kCyan);
-  l_right->SetLineWidth(2);
-
-
-  // text
-  TPaveText *pl2 = new TPaveText(0.20,0.70,0.30,0.88, "brNDC");
-  pl2->SetTextSize(0.04);
-  pl2->SetFillColor(0);
-  pl2->SetTextFont(132);
-  pl2->SetBorderSize(0);
-  pl2->SetTextAlign(11);
-  //TLatex *   tex = new TLatex(0.17,0.78,"#hat{#mu} = 0.71 ^{#font[122]{+}0.48}_{#font[122]{-}0.43}");
-  //  pl2->AddText(Form("#hat{#mu} = %.2f +%.2f -%.2f",x_0,x_min,x_max));// "#mu^{^}=",x_0.Data());
-
-  TLatex *   tex = new TLatex(0.30,5.50,Form("#hat{#mu} = %.2f ^{#font[122]{+}%.2f}_{#font[122]{-}%.2f}",x_0,(x_max-x_0),(x_0-x_min))); 
-  
-  //TLatex *text_alpha = new TLatex(583, 150, "#color[2]{sparks}");
-
-    
-  f1->SetMinimum(0.0);
-  f1->Draw();
-  l1->Draw("SAME");
-  l_cen->Draw("SAME");
-  l_left->Draw("SAME");
-  l_right->Draw("SAME");
-
-  pl2->Draw();
-  tex->Draw();
-  gPad->SaveAs("mu_example.pdf");
-  //  text_alpha->Draw();
+  cout<<"GetMaximum=  "<<f2->GetMaximum()<<endl;
+  cout<<"GetMaximumXY=  "<<f2->GetMaximumXY(co,coh)<<endl;
+  std::cout << "GetMaximumXY = " << f2->GetMaximumXY(co, coh) << " at ( " << co << " , " << coh << " )" << std::endl;
   */
+  //gkole
+  cout << "gkole start: " << endl;
+  cout<<"GetMaximum=  "<<f2_->GetMaximum()<<endl;
+  cout<<"GetMaximumXY=  "<<f2_->GetMaximumXY(co,coh)<<endl;
+  std::cout << "GetMaximumXY = " << f2_->GetMaximumXY(co, coh) << " at ( " << co << " , " << coh << " )" << std::endl;
+  cout << "gkole end: " << endl;
+
+  Double_t maximum = f2->GetMaximum();
+  double contours[2];
+  contours[0] = (maximum-2);
+  contours[1] = (maximum-0.5);
+  int colors[2] = {1,1};
+  //likelihood_2d_->SetPalette(2,colors);
+  f2->SetContour(2,contours);
+
+  Double_t maximum_ = f2_->GetMaximum();
+  double contours_[2];
+  contours_[0] = (maximum_-2);
+  contours_[1] = (maximum_-0.5);
+  int colors_[2] = {1,1};
+  //likelihood_2d_->SetPalette(2,colors);
+  f2_->SetContour(2,contours_);
+
+  
+  // 1d projection
+  TF1 *f21_= new TF1("f21_","(((-8.83-x*0.2169)+(10*log(8.83+x*0.2169))-(10*log(10))+10)+((-6.34195-[0]*2.529)+(6*log(6.34195+[0]*2.529))-(6*log(6))+6))",-20.0,50.0);
+  
+  f21_->SetParameter(0,-0.135263);
+  cout << "f21_->GetMaximum(): " << f21_->GetMaximum() << endl;
+
+  double horizontal_val = f21_->GetMaximum()-0.5;
+  cout << "horizontal_val:" << horizontal_val << endl;
+
+  //TF1 *f210_ = new TF1("f210_","horizontal_val.c_str()",-20,50);
+  TF1 *f210_ = new TF1("f210_","-0.5000",-20,50);
+  f210_->SetLineColor(kGreen);
+ 
+  TLatex *tex = new TLatex(10,5.50,"2D function");
+  TCanvas* c=new TCanvas("c","c",1000,1000);
+  c->Divide(1,2); // 1 column, 2 row
+  c->cd(1);
+  f2_->Draw("cont1");
+  c->cd(2);
+  f21_->Draw("");
+  f210_->Draw("SAME");
+  tex->Draw();
+  
 }
-
-
