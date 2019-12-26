@@ -46,8 +46,10 @@ void MLFunction(){
   cout << "f_max: " << f_max << " " << "f1_up: " << " " << f1_up << " " << "f1_down: " << f1_down << endl;
 
   // interaction
-  double x_0 = f1->GetX(f_max); // equivalent to mu_0
+  //double x_0 = f1->GetX(f_max); // equivalent to mu_0
+  double x_0 = f1->GetMinimumX(); // new gkole
   cout << "x_0:  "<< x_0 << endl;
+  
   double x_min = f1->GetX(f1_up,xlim_min,x_0);
   cout << "m_min: " << x_min << endl;
   double x_max = f1->GetX(f1_up,x_0,xlim_max);
@@ -94,6 +96,7 @@ void MLFunction(){
 
   pl2->Draw();
   tex->Draw();
+  
   gPad->SaveAs("mu_example.pdf");
   //  text_alpha->Draw();
 }
